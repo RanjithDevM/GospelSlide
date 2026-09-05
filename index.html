@@ -1,0 +1,1382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Worship Display — Church Song Presenter</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=Cinzel:wght@400;600;700&family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f5f7f2;
+    --surface: #ffffff;
+    --border: #d8e4d0;
+    --border2: #c5d9b8;
+    --green-dark: #1a5c2a;
+    --green-mid: #2d7a3e;
+    --green-light: #4a9e5c;
+    --green-pale: #e8f4ec;
+    --green-accent: #3d8b4f;
+    --black: #111a0f;
+    --black2: #1e2d1b;
+    --text: #1a2818;
+    --muted: #5a7a55;
+    --muted2: #8aaa84;
+    --gold: #b5922a;
+    --gold-light: #f0e0a0;
+    --radius: 10px;
+    --shadow: 0 2px 12px rgba(26,92,42,0.09);
+    --shadow-lg: 0 8px 32px rgba(26,92,42,0.14);
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+
+  body {
+    font-family: 'EB Garamond', Georgia, serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ── TOP HEADER ── */
+  .app-header {
+    background: var(--black);
+    padding: 0.9rem 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 3px solid var(--green-mid);
+    flex-shrink: 0;
+  }
+
+  .app-brand {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+  }
+
+  .brand-cross {
+    width: 32px;
+    height: 32px;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .brand-cross::before {
+    content: '✝';
+    font-size: 1.6rem;
+    color: var(--green-light);
+    line-height: 1;
+  }
+
+  .brand-text {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .brand-name {
+    font-family: 'Cinzel', serif;
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: #ffffff;
+    letter-spacing: 0.1em;
+    line-height: 1;
+  }
+
+  .brand-sub {
+    font-size: 0.62rem;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--green-light);
+    opacity: 0.8;
+    margin-top: 2px;
+  }
+
+  .header-actions {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+  }
+
+  .hbtn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.45rem 1rem;
+    border-radius: 6px;
+    border: none;
+    font-family: 'EB Garamond', serif;
+    font-size: 0.88rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 0.03em;
+  }
+
+  .hbtn-green {
+    background: var(--green-mid);
+    color: white;
+    border: 1px solid var(--green-light);
+  }
+  .hbtn-green:hover { background: var(--green-light); transform: translateY(-1px); }
+
+  .hbtn-ghost {
+    background: transparent;
+    color: rgba(255,255,255,0.7);
+    border: 1px solid rgba(255,255,255,0.2);
+  }
+  .hbtn-ghost:hover { background: rgba(255,255,255,0.08); color: white; }
+
+  .hbtn-gold {
+    background: var(--gold);
+    color: white;
+    border: 1px solid var(--gold-light);
+  }
+  .hbtn-gold:hover { background: #9a7d24; transform: translateY(-1px); }
+
+  /* ── MAIN LAYOUT ── */
+  .app-body {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 420px 1fr;
+    overflow: hidden;
+    height: calc(100vh - 58px);
+  }
+
+  /* ── LEFT PANEL ── */
+  .left-panel {
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    box-shadow: 2px 0 16px rgba(26,92,42,0.07);
+  }
+
+  .panel-section {
+    padding: 1.1rem 1.25rem;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+
+  .panel-label {
+    font-family: 'Cinzel', serif;
+    font-size: 0.65rem;
+    font-weight: 600;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--green-dark);
+    margin-bottom: 0.6rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .panel-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  .song-title-input {
+    width: 100%;
+    border: 1.5px solid var(--border);
+    border-radius: 7px;
+    padding: 0.6rem 0.85rem;
+    font-family: 'Cinzel', serif;
+    font-size: 0.92rem;
+    color: var(--text);
+    background: var(--bg);
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .song-title-input:focus { border-color: var(--green-mid); background: white; box-shadow: 0 0 0 3px rgba(45,122,62,0.1); }
+
+  .lyrics-textarea {
+    width: 100%;
+    border: 1.5px solid var(--border);
+    border-radius: 7px;
+    padding: 0.75rem 0.85rem;
+    font-family: 'EB Garamond', serif;
+    font-size: 0.9rem;
+    color: var(--text);
+    background: var(--bg);
+    outline: none;
+    resize: none;
+    height: 180px;
+    line-height: 1.6;
+    transition: border-color 0.2s;
+  }
+  .lyrics-textarea:focus { border-color: var(--green-mid); background: white; box-shadow: 0 0 0 3px rgba(45,122,62,0.1); }
+
+  .lyrics-textarea::placeholder { color: var(--muted2); font-style: italic; }
+
+  .parse-btn-row {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 0.6rem;
+  }
+
+  .parse-btn {
+    flex: 1;
+    padding: 0.6rem;
+    border: none;
+    border-radius: 7px;
+    font-family: 'EB Garamond', serif;
+    font-size: 0.88rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35rem;
+  }
+
+  .parse-btn-primary {
+    background: var(--green-dark);
+    color: white;
+  }
+  .parse-btn-primary:hover { background: var(--green-mid); transform: translateY(-1px); }
+
+  .parse-btn-clear {
+    background: var(--bg);
+    color: var(--muted);
+    border: 1px solid var(--border);
+  }
+  .parse-btn-clear:hover { background: #fee2e2; color: #dc2626; border-color: #fca5a5; }
+
+  /* ── STANZAS LIST ── */
+  .stanzas-panel {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0.75rem;
+  }
+
+  .stanza-card {
+    background: var(--bg);
+    border: 1.5px solid var(--border);
+    border-radius: 9px;
+    padding: 0.85rem 1rem;
+    margin-bottom: 0.6rem;
+    cursor: pointer;
+    transition: all 0.22s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .stanza-card::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 3px;
+    background: var(--border2);
+    transition: background 0.2s;
+  }
+
+  .stanza-card:hover {
+    border-color: var(--green-mid);
+    background: var(--green-pale);
+    transform: translateX(3px);
+    box-shadow: var(--shadow);
+  }
+
+  .stanza-card:hover::before { background: var(--green-mid); }
+
+  .stanza-card.active {
+    border-color: var(--green-dark);
+    background: var(--green-pale);
+    box-shadow: 0 0 0 3px rgba(26,92,42,0.12), var(--shadow);
+  }
+
+  .stanza-card.active::before { background: var(--green-dark); }
+
+  .stanza-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.4rem;
+  }
+
+  .stanza-label {
+    font-family: 'Cinzel', serif;
+    font-size: 0.65rem;
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--green-dark);
+  }
+
+  .stanza-card.active .stanza-label { color: var(--green-dark); }
+
+  .stanza-badge {
+    font-family: 'Cinzel', serif;
+    font-size: 0.6rem;
+    padding: 1px 7px;
+    border-radius: 20px;
+    background: var(--green-pale);
+    color: var(--green-dark);
+    border: 1px solid var(--border2);
+    font-weight: 600;
+  }
+
+  .stanza-card.active .stanza-badge {
+    background: var(--green-dark);
+    color: white;
+    border-color: var(--green-dark);
+  }
+
+  .stanza-preview {
+    font-size: 0.82rem;
+    color: var(--muted);
+    line-height: 1.55;
+    white-space: pre-wrap;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+  }
+
+  .stanza-card.active .stanza-preview { color: var(--text); }
+
+  .stanza-actions {
+    display: flex;
+    gap: 0.3rem;
+    margin-top: 0.5rem;
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+  .stanza-card:hover .stanza-actions { opacity: 1; }
+
+  .stanza-act-btn {
+    padding: 0.2rem 0.55rem;
+    border-radius: 5px;
+    border: 1px solid var(--border2);
+    background: white;
+    font-size: 0.72rem;
+    cursor: pointer;
+    color: var(--text);
+    transition: all 0.15s;
+    font-family: 'EB Garamond', serif;
+  }
+  .stanza-act-btn:hover { background: var(--green-dark); color: white; border-color: var(--green-dark); }
+  .stanza-act-btn.del:hover { background: #dc2626; border-color: #dc2626; }
+
+  .nav-controls {
+    padding: 0.75rem 1rem;
+    border-top: 1px solid var(--border);
+    background: var(--surface);
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    flex-shrink: 0;
+  }
+
+  .nav-btn {
+    flex: 1;
+    padding: 0.6rem;
+    border: 1.5px solid var(--border2);
+    border-radius: 7px;
+    background: white;
+    font-family: 'EB Garamond', serif;
+    font-size: 0.88rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35rem;
+    font-weight: 500;
+    color: var(--text);
+    transition: all 0.18s;
+  }
+  .nav-btn:hover:not(:disabled) { background: var(--green-pale); border-color: var(--green-mid); color: var(--green-dark); }
+  .nav-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+
+  .nav-counter {
+    font-family: 'Cinzel', serif;
+    font-size: 0.78rem;
+    color: var(--muted);
+    white-space: nowrap;
+    padding: 0 0.25rem;
+  }
+
+  /* ── RIGHT: PREVIEW ── */
+  .right-panel {
+    background: var(--bg);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .preview-toolbar {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0.75rem 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-shrink: 0;
+  }
+
+  .toolbar-title {
+    font-family: 'Cinzel', serif;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--green-dark);
+  }
+
+  .toolbar-sep { width: 1px; height: 20px; background: var(--border); }
+
+  .font-size-control {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+  }
+
+  .fs-label { font-size: 0.72rem; color: var(--muted); }
+
+  .fs-btn {
+    width: 26px; height: 26px;
+    border-radius: 5px;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    cursor: pointer;
+    font-size: 0.9rem;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--text);
+    transition: all 0.15s;
+  }
+  .fs-btn:hover { background: var(--green-pale); border-color: var(--green-mid); }
+
+  .fs-val {
+    font-family: 'Cinzel', serif;
+    font-size: 0.78rem;
+    color: var(--green-dark);
+    font-weight: 600;
+    min-width: 30px;
+    text-align: center;
+  }
+
+  .align-btns { display: flex; gap: 2px; }
+  .align-btn {
+    width: 26px; height: 26px;
+    border-radius: 5px;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    cursor: pointer;
+    font-size: 0.75rem;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.15s;
+    color: var(--muted);
+  }
+  .align-btn.active, .align-btn:hover { background: var(--green-dark); color: white; border-color: var(--green-dark); }
+
+  .fullscreen-btn {
+    margin-left: auto;
+    padding: 0.45rem 1.1rem;
+    border-radius: 7px;
+    border: none;
+    background: var(--green-dark);
+    color: white;
+    font-family: 'Cinzel', serif;
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    transition: all 0.2s;
+    box-shadow: 0 2px 8px rgba(26,92,42,0.25);
+  }
+  .fullscreen-btn:hover { background: var(--green-mid); transform: translateY(-1px); box-shadow: 0 4px 14px rgba(26,92,42,0.3); }
+
+  /* ── PREVIEW AREA ── */
+  .preview-area {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .preview-card {
+    background: white;
+    width: 100%;
+    max-width: 820px;
+    aspect-ratio: 16/9;
+    border-radius: 12px;
+    box-shadow: 0 4px 32px rgba(26,92,42,0.14), 0 0 0 1px var(--border);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem 4rem;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s;
+  }
+
+  /* Corner crosses decorative */
+  .preview-card::before {
+    content: '✝';
+    position: absolute;
+    top: 1rem; left: 1.5rem;
+    font-size: 1.2rem;
+    color: var(--green-light);
+    opacity: 0.25;
+  }
+  .preview-card::after {
+    content: '✝';
+    position: absolute;
+    bottom: 1rem; right: 1.5rem;
+    font-size: 1.2rem;
+    color: var(--green-light);
+    opacity: 0.25;
+  }
+
+  /* Top green accent line */
+  .preview-card .top-line {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--green-dark), var(--green-light), var(--green-dark));
+  }
+
+  .preview-card .bottom-line {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--green-dark), var(--green-light), var(--green-dark));
+  }
+
+  .preview-song-title {
+    font-family: 'Cinzel', serif;
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--green-mid);
+    margin-bottom: 1.25rem;
+    text-align: center;
+  }
+
+  .preview-stanza-label {
+    font-family: 'Cinzel', serif;
+    font-size: 0.65rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--green-dark);
+    opacity: 0.55;
+    margin-bottom: 0.75rem;
+    text-align: center;
+  }
+
+  .preview-lyrics {
+    text-align: center;
+    font-family: 'Cormorant Garamond', serif;
+    line-height: 1.75;
+    white-space: pre-wrap;
+    animation: lyricFadeIn 0.35s ease;
+    /* font-size is set via inline style from JS fontSize variable */
+  }
+
+  @keyframes lyricFadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: none; }
+  }
+
+  .preview-empty {
+    text-align: center;
+    color: var(--muted2);
+  }
+
+  .preview-empty .empty-cross {
+    font-size: 3rem;
+    color: var(--green-light);
+    opacity: 0.3;
+    display: block;
+    margin-bottom: 0.75rem;
+  }
+
+  .preview-empty p {
+    font-size: 0.9rem;
+    font-style: italic;
+    color: var(--muted2);
+  }
+
+  /* ── LINE COLORING (black + green alternating) ── */
+  .line-black { color: var(--black); }
+  .line-green { color: var(--green-dark); }
+
+  /* ── STANZA NAV DOTS ── */
+  .nav-dots {
+    position: absolute;
+    bottom: 0.6rem;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 5px;
+  }
+
+  .nav-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--border2);
+    transition: all 0.2s;
+  }
+  .nav-dot.active { background: var(--green-dark); width: 18px; border-radius: 3px; }
+
+  /* ── FULLSCREEN OVERLAY ── */
+  #fullscreenOverlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: white;
+    z-index: 9999;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding-bottom: 72px;
+  }
+
+  #fullscreenOverlay.active { display: flex; }
+
+  .fs-top-bar {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 5px;
+    background: linear-gradient(90deg, var(--green-dark), var(--green-light), var(--green-dark));
+  }
+
+  .fs-bottom-bar {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 5px;
+    background: linear-gradient(90deg, var(--green-dark), var(--green-light), var(--green-dark));
+  }
+
+  .fs-corner-cross {
+    position: absolute;
+    font-size: 2rem;
+    color: var(--green-light);
+    opacity: 0.15;
+    font-weight: 400;
+  }
+  .fs-corner-cross.tl { top: 1.5rem; left: 2rem; }
+  .fs-corner-cross.tr { top: 1.5rem; right: 2rem; }
+  .fs-corner-cross.bl { bottom: 1.5rem; left: 2rem; }
+  .fs-corner-cross.br { bottom: 1.5rem; right: 2rem; }
+
+  .fs-song-title {
+    font-family: 'Cinzel', serif;
+    font-size: clamp(1rem, 2.5vw, 1.5rem);
+    font-weight: 600;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--green-mid);
+    text-align: center;
+    margin-bottom: 2rem;
+    position: relative;
+    z-index: 1;
+  }
+
+  .fs-stanza-label {
+    font-family: 'Cinzel', serif;
+    font-size: clamp(0.6rem, 1.2vw, 0.9rem);
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--green-dark);
+    opacity: 0.5;
+    text-align: center;
+    margin-bottom: 1.5rem;
+    position: relative;
+    z-index: 1;
+  }
+
+  .fs-lyrics {
+    text-align: center;
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 700;
+    white-space: pre-wrap;
+    line-height: 1.8;
+    position: relative;
+    z-index: 1;
+    max-width: 85vw;
+    animation: lyricFadeIn 0.4s ease;
+    /* font-size is set via inline style from JS fontSize variable */
+  }
+
+  .fs-nav {
+    position: absolute;
+    bottom: 0;
+    left: 0; right: 0;
+    display: flex;
+    gap: 0.6rem;
+    align-items: center;
+    justify-content: center;
+    padding: 0.85rem 1.5rem;
+    background: rgba(10, 10, 10, 0.92);
+    border-top: 2px solid var(--green-dark);
+    z-index: 10;
+    backdrop-filter: blur(8px);
+  }
+
+  .fs-nav-btn {
+    padding: 0.55rem 1.4rem;
+    border-radius: 7px;
+    border: 2px solid var(--green-mid);
+    background: #111;
+    font-family: 'Cinzel', serif;
+    font-size: 0.82rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    cursor: pointer;
+    color: #ffffff;
+    transition: all 0.18s;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+  }
+  .fs-nav-btn:hover:not(:disabled) { background: var(--green-dark); color: white; border-color: var(--green-light); transform: translateY(-1px); }
+  .fs-nav-btn:disabled { opacity: 0.25; cursor: not-allowed; border-color: #333; color: #555; }
+
+  .fs-size-btn {
+    width: 40px; height: 40px;
+    border-radius: 7px;
+    border: 2px solid var(--green-mid);
+    background: #111;
+    font-family: 'Cinzel', serif;
+    font-size: 1.2rem;
+    font-weight: 700;
+    cursor: pointer;
+    color: #ffffff;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.18s;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    flex-shrink: 0;
+  }
+  .fs-size-btn:hover { background: var(--green-dark); border-color: var(--green-light); transform: translateY(-1px); }
+
+  .fs-size-label {
+    font-family: 'Cinzel', serif;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--green-light);
+    background: #111;
+    border: 2px solid #333;
+    border-radius: 6px;
+    padding: 0.2rem 0.55rem;
+    min-width: 46px;
+    text-align: center;
+    letter-spacing: 0.08em;
+  }
+
+  .fs-nav-sep {
+    width: 1px;
+    height: 28px;
+    background: #333;
+    flex-shrink: 0;
+  }
+
+  .fs-close-btn {
+    position: absolute;
+    top: 1rem;
+    right: 1.25rem;
+    background: #111;
+    border: 2px solid var(--green-mid);
+    border-radius: 7px;
+    padding: 0.4rem 1rem;
+    font-family: 'Cinzel', serif;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    cursor: pointer;
+    color: #fff;
+    transition: all 0.2s;
+    z-index: 10;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+  }
+  .fs-close-btn:hover { background: #dc2626; border-color: #f87171; }
+
+  .fs-dots {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+  }
+  .fs-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: #444;
+    transition: all 0.2s;
+    border: 1px solid #555;
+  }
+  .fs-dot.active { background: var(--green-light); width: 24px; border-radius: 4px; border-color: var(--green-light); }
+
+  .fs-counter {
+    font-family: 'Cinzel', serif;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: #aaa;
+    min-width: 52px;
+    text-align: center;
+    letter-spacing: 0.12em;
+    background: #0a0a0a;
+    border: 1px solid #2a2a2a;
+    border-radius: 5px;
+    padding: 0.2rem 0.4rem;
+  }
+
+  /* ── EMPTY STATE ── */
+  .empty-state {
+    text-align: center;
+    color: var(--muted2);
+    font-style: italic;
+    padding: 2rem;
+    font-size: 0.85rem;
+    line-height: 1.7;
+  }
+
+  /* ── SCROLLBAR ── */
+  ::-webkit-scrollbar { width: 5px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 10px; }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 800px) {
+    .app-body { grid-template-columns: 1fr; }
+    .right-panel { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ── HEADER ── -->
+<header class="app-header">
+  <div class="app-brand">
+    <div class="brand-cross"></div>
+    <div class="brand-text">
+      <div class="brand-name">Worship Display</div>
+      <div class="brand-sub">Church Song Presenter</div>
+    </div>
+  </div>
+  <div class="header-actions">
+    <button class="hbtn hbtn-gold" onclick="openFullscreen()">⛶ Fullscreen Display</button>
+    <button class="hbtn hbtn-ghost" onclick="clearAll()">✕ Clear All</button>
+  </div>
+</header>
+
+<!-- ── BODY ── -->
+<div class="app-body">
+
+  <!-- ══ LEFT PANEL ══ -->
+  <div class="left-panel">
+
+    <!-- Song Title -->
+    <div class="panel-section">
+      <div class="panel-label">Song Title</div>
+      <input class="song-title-input" id="songTitle" placeholder="Enter song title…" oninput="updatePreview()">
+    </div>
+
+    <!-- Paste Lyrics -->
+    <div class="panel-section">
+      <div class="panel-label">Paste Lyrics</div>
+      <textarea class="lyrics-textarea" id="lyricsInput" placeholder="Paste your full song lyrics here…
+
+Separate stanzas / verses with a blank line.
+
+Example:
+Amazing grace how sweet the sound
+That saved a wretch like me
+
+I once was lost but now am found
+Was blind but now I see"></textarea>
+      <div class="parse-btn-row">
+        <button class="parse-btn parse-btn-primary" onclick="parseLyrics()">✦ Parse &amp; Segment</button>
+        <button class="parse-btn parse-btn-clear" onclick="clearLyrics()">Clear</button>
+      </div>
+    </div>
+
+    <!-- Stanzas List -->
+    <div class="panel-label" style="padding:0.6rem 1.25rem 0;flex-shrink:0;display:flex;align-items:center;gap:0.5rem;font-family:'Cinzel',serif;font-size:0.65rem;font-weight:600;letter-spacing:0.2em;text-transform:uppercase;color:var(--green-dark)">
+      Stanzas
+      <span id="stanzaCount" style="font-family:'EB Garamond',serif;font-size:0.75rem;color:var(--muted);font-style:italic;text-transform:none;letter-spacing:0;margin-left:0.25rem"></span>
+    </div>
+    <div class="stanzas-panel" id="stanzasList">
+      <div class="empty-state">
+        Paste your lyrics above and click<br>
+        <strong>"Parse &amp; Segment"</strong> to split into stanzas.<br><br>
+        ✝ Each blank line becomes a new stanza.
+      </div>
+    </div>
+
+    <!-- Navigation -->
+    <div class="nav-controls">
+      <button class="nav-btn" id="prevBtn" onclick="navigate(-1)" disabled>← Prev</button>
+      <div class="nav-counter" id="navCounter">— / —</div>
+      <button class="nav-btn" id="nextBtn" onclick="navigate(1)" disabled>Next →</button>
+    </div>
+
+  </div>
+
+  <!-- ══ RIGHT PANEL (PREVIEW) ══ -->
+  <div class="right-panel">
+
+    <!-- Toolbar -->
+    <div class="preview-toolbar">
+      <div class="toolbar-title">Preview</div>
+      <div class="toolbar-sep"></div>
+
+      <div class="font-size-control">
+        <span class="fs-label">Size:</span>
+        <button class="fs-btn" onclick="changeFontSize(-4)">−</button>
+        <div class="fs-val" id="fontSizeVal">32</div>
+        <button class="fs-btn" onclick="changeFontSize(4)">+</button>
+      </div>
+
+      <div class="toolbar-sep"></div>
+
+      <div class="font-size-control">
+        <span class="fs-label">Align:</span>
+        <div class="align-btns">
+          <button class="align-btn active" id="align-center" onclick="setAlign('center')" title="Center">≡</button>
+          <button class="align-btn" id="align-left" onclick="setAlign('left')" title="Left">☰</button>
+        </div>
+      </div>
+
+      <div class="toolbar-sep"></div>
+
+      <div class="font-size-control">
+        <span class="fs-label">Lines:</span>
+        <div class="align-btns">
+          <button class="align-btn active" id="color-alternate" onclick="setColorMode('alternate')" title="Alternating B+G">B/G</button>
+          <button class="align-btn" id="color-all-black" onclick="setColorMode('all-black')" title="All Black">B</button>
+          <button class="align-btn" id="color-all-green" onclick="setColorMode('all-green')" title="All Green">G</button>
+        </div>
+      </div>
+
+      <button class="fullscreen-btn" onclick="openFullscreen()">
+        ⛶ FULLSCREEN
+      </button>
+    </div>
+
+    <!-- Preview Card -->
+    <div class="preview-area">
+      <div class="preview-card" id="previewCard">
+        <div class="top-line"></div>
+        <div class="bottom-line"></div>
+
+        <div class="preview-song-title" id="previewSongTitle" style="display:none"></div>
+        <div class="preview-stanza-label" id="previewStanzaLabel" style="display:none"></div>
+
+        <div id="previewLyrics">
+          <div class="preview-empty">
+            <span class="empty-cross">✝</span>
+            <p>"Sing to the Lord a new song…"</p>
+            <p style="margin-top:0.5rem;font-size:0.78rem">Paste your lyrics and segment them to begin</p>
+          </div>
+        </div>
+
+        <div class="nav-dots" id="navDots"></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══════════════════════════════════
+     FULLSCREEN OVERLAY
+══════════════════════════════════ -->
+<div id="fullscreenOverlay">
+  <div class="fs-top-bar"></div>
+  <div class="fs-bottom-bar"></div>
+
+  <span class="fs-corner-cross tl">✝</span>
+  <span class="fs-corner-cross tr">✝</span>
+  <span class="fs-corner-cross bl">✝</span>
+  <span class="fs-corner-cross br">✝</span>
+
+  <button class="fs-close-btn" onclick="closeFullscreen()">✕ ESC</button>
+
+  <div class="fs-song-title" id="fsSongTitle"></div>
+  <div class="fs-stanza-label" id="fsStanzaLabel"></div>
+  <div class="fs-lyrics" id="fsLyrics"></div>
+
+  <div class="fs-nav">
+    <button class="fs-nav-btn" id="fsPrevBtn" onclick="navigate(-1)">← Prev</button>
+    <div class="fs-nav-sep"></div>
+    <button class="fs-size-btn" onclick="changeFontSize(-4)" title="Smaller text">A−</button>
+    <div class="fs-size-label" id="fsFontSizeVal">32px</div>
+    <button class="fs-size-btn" onclick="changeFontSize(4)" title="Larger text">A+</button>
+    <div class="fs-nav-sep"></div>
+    <div class="fs-dots" id="fsDots"></div>
+    <div class="fs-counter" id="fsCounter">1 / 1</div>
+    <div class="fs-nav-sep"></div>
+    <button class="fs-nav-btn" id="fsNextBtn" onclick="navigate(1)">Next →</button>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════
+//  STATE
+// ══════════════════════════════════════════════
+let stanzas = [];
+let currentIndex = 0;
+let fontSize = 32;
+let fsFontSize = 52;
+let textAlign = 'center';
+let colorMode = 'alternate'; // 'alternate' | 'all-black' | 'all-green'
+let isFullscreen = false;
+
+// ══════════════════════════════════════════════
+//  PARSE LYRICS
+// ══════════════════════════════════════════════
+function parseLyrics() {
+  const raw = document.getElementById('lyricsInput').value.trim();
+  if (!raw) { showToast('Please paste lyrics first'); return; }
+
+  // Split by blank lines (one or more)
+  const blocks = raw.split(/\n\s*\n/).map(b => b.trim()).filter(b => b.length > 0);
+
+  stanzas = blocks.map((text, i) => ({
+    id: i,
+    label: guessStanzaLabel(text, i, blocks.length),
+    text: text
+  }));
+
+  currentIndex = 0;
+  renderStanzaList();
+  updatePreview();
+  updateNavControls();
+  showToast(`✦ ${stanzas.length} stanza${stanzas.length !== 1 ? 's' : ''} created`);
+}
+
+function guessStanzaLabel(text, idx, total) {
+  const lower = text.toLowerCase().trim();
+  if (lower.startsWith('chorus') || lower.includes('[chorus]')) return 'Chorus';
+  if (lower.startsWith('bridge') || lower.includes('[bridge]')) return 'Bridge';
+  if (lower.startsWith('verse')  || lower.includes('[verse]'))  return 'Verse ' + (idx + 1);
+  if (lower.startsWith('refrain')) return 'Refrain';
+  if (lower.startsWith('pre-chorus')) return 'Pre-Chorus';
+  if (lower.startsWith('intro')) return 'Intro';
+  if (lower.startsWith('outro')) return 'Outro';
+  // Detect if it repeats (likely chorus)
+  // Just number them
+  return 'Verse ' + (idx + 1);
+}
+
+// ══════════════════════════════════════════════
+//  RENDER STANZA LIST
+// ══════════════════════════════════════════════
+function renderStanzaList() {
+  const container = document.getElementById('stanzasList');
+  document.getElementById('stanzaCount').textContent = stanzas.length ? `(${stanzas.length})` : '';
+
+  if (!stanzas.length) {
+    container.innerHTML = `<div class="empty-state">No stanzas yet. Paste lyrics and click "Parse & Segment".</div>`;
+    return;
+  }
+
+  container.innerHTML = stanzas.map((s, i) => `
+    <div class="stanza-card ${i === currentIndex ? 'active' : ''}" onclick="selectStanza(${i})" id="stanzaCard${i}">
+      <div class="stanza-header">
+        <div class="stanza-label">✦ ${s.label}</div>
+        <div class="stanza-badge">${i + 1}</div>
+      </div>
+      <div class="stanza-preview">${escHtml(s.text)}</div>
+      <div class="stanza-actions">
+        <button class="stanza-act-btn" onclick="event.stopPropagation();moveStanza(${i},-1)" ${i===0?'disabled':''}>↑ Up</button>
+        <button class="stanza-act-btn" onclick="event.stopPropagation();moveStanza(${i},1)" ${i===stanzas.length-1?'disabled':''}>↓ Down</button>
+        <button class="stanza-act-btn" onclick="event.stopPropagation();editStanzaLabel(${i})">✎ Rename</button>
+        <button class="stanza-act-btn del" onclick="event.stopPropagation();deleteStanza(${i})">✕ Del</button>
+      </div>
+    </div>
+  `).join('');
+
+  renderNavDots();
+}
+
+function selectStanza(i) {
+  currentIndex = i;
+  renderStanzaList();
+  updatePreview();
+  updateNavControls();
+  // Scroll card into view
+  const card = document.getElementById('stanzaCard' + i);
+  if (card) card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function deleteStanza(i) {
+  stanzas.splice(i, 1);
+  if (currentIndex >= stanzas.length) currentIndex = Math.max(0, stanzas.length - 1);
+  renderStanzaList();
+  updatePreview();
+  updateNavControls();
+}
+
+function moveStanza(i, dir) {
+  const j = i + dir;
+  if (j < 0 || j >= stanzas.length) return;
+  [stanzas[i], stanzas[j]] = [stanzas[j], stanzas[i]];
+  if (currentIndex === i) currentIndex = j;
+  else if (currentIndex === j) currentIndex = i;
+  renderStanzaList();
+  updatePreview();
+}
+
+function editStanzaLabel(i) {
+  const label = prompt('Rename stanza:', stanzas[i].label);
+  if (label && label.trim()) {
+    stanzas[i].label = label.trim();
+    renderStanzaList();
+    updatePreview();
+  }
+}
+
+// ══════════════════════════════════════════════
+//  NAVIGATION
+// ══════════════════════════════════════════════
+function navigate(dir) {
+  currentIndex = Math.max(0, Math.min(stanzas.length - 1, currentIndex + dir));
+  renderStanzaList();
+  updatePreview();
+  updateNavControls();
+  if (isFullscreen) updateFullscreen();
+}
+
+function updateNavControls() {
+  const prev = document.getElementById('prevBtn');
+  const next = document.getElementById('nextBtn');
+  const counter = document.getElementById('navCounter');
+  if (!stanzas.length) {
+    prev.disabled = next.disabled = true;
+    counter.textContent = '— / —';
+    return;
+  }
+  prev.disabled = currentIndex === 0;
+  next.disabled = currentIndex === stanzas.length - 1;
+  counter.textContent = `${currentIndex + 1} / ${stanzas.length}`;
+}
+
+// ══════════════════════════════════════════════
+//  PREVIEW UPDATE
+// ══════════════════════════════════════════════
+function updatePreview() {
+  const titleEl = document.getElementById('previewSongTitle');
+  const labelEl = document.getElementById('previewStanzaLabel');
+  const lyricsEl = document.getElementById('previewLyrics');
+  const title = document.getElementById('songTitle').value.trim();
+
+  if (title) {
+    titleEl.textContent = title;
+    titleEl.style.display = '';
+  } else {
+    titleEl.style.display = 'none';
+  }
+
+  if (!stanzas.length) {
+    labelEl.style.display = 'none';
+    lyricsEl.innerHTML = `<div class="preview-empty"><span class="empty-cross">✝</span><p>"Sing to the Lord a new song…"</p></div>`;
+    return;
+  }
+
+  const s = stanzas[currentIndex];
+  labelEl.textContent = s.label;
+  labelEl.style.display = '';
+
+  lyricsEl.innerHTML = `<div class="preview-lyrics" style="font-size:${fontSize}px;text-align:${textAlign}">${colorizeLines(s.text)}</div>`;
+
+  renderNavDots();
+}
+
+function colorizeLines(text) {
+  return text.split('\n').map((line, i) => {
+    let cls = 'line-black';
+    if (colorMode === 'alternate') {
+      cls = i % 2 === 0 ? 'line-black' : 'line-green';
+    } else if (colorMode === 'all-green') {
+      cls = 'line-green';
+    } else {
+      cls = 'line-black';
+    }
+    return `<span class="${cls}" style="display:block">${escHtml(line) || '&nbsp;'}</span>`;
+  }).join('');
+}
+
+function renderNavDots() {
+  const dots = document.getElementById('navDots');
+  if (stanzas.length <= 1) { dots.innerHTML = ''; return; }
+  dots.innerHTML = stanzas.map((_, i) =>
+    `<div class="nav-dot ${i === currentIndex ? 'active' : ''}"></div>`
+  ).join('');
+}
+
+// ══════════════════════════════════════════════
+//  FONT SIZE & ALIGN
+// ══════════════════════════════════════════════
+function changeFontSize(delta) {
+  fontSize = Math.max(10, Math.min(120, fontSize + delta));
+  document.getElementById('fontSizeVal').textContent = fontSize;
+  // Update fullscreen label too if it exists
+  const fsLabel = document.getElementById('fsFontSizeVal');
+  if (fsLabel) fsLabel.textContent = fontSize + 'px';
+  updatePreview();
+  if (isFullscreen) {
+    const lyricsEl = document.getElementById('fsLyrics');
+    lyricsEl.style.fontSize = fontSize + 'px';
+  }
+}
+
+function setAlign(a) {
+  textAlign = a;
+  document.querySelectorAll('[id^="align-"]').forEach(b => b.classList.remove('active'));
+  document.getElementById('align-' + a).classList.add('active');
+  updatePreview();
+  if (isFullscreen) updateFullscreen();
+}
+
+function setColorMode(mode) {
+  colorMode = mode;
+  document.querySelectorAll('[id^="color-"]').forEach(b => b.classList.remove('active'));
+  document.getElementById('color-' + mode).classList.add('active');
+  updatePreview();
+  if (isFullscreen) updateFullscreen();
+}
+
+// ══════════════════════════════════════════════
+//  FULLSCREEN
+// ══════════════════════════════════════════════
+function openFullscreen() {
+  if (!stanzas.length) { showToast('Parse lyrics first before displaying'); return; }
+  isFullscreen = true;
+  document.getElementById('fullscreenOverlay').classList.add('active');
+  updateFullscreen();
+
+  // Try browser fullscreen API
+  const el = document.getElementById('fullscreenOverlay');
+  if (el.requestFullscreen) el.requestFullscreen();
+  else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+}
+
+function closeFullscreen() {
+  isFullscreen = false;
+  document.getElementById('fullscreenOverlay').classList.remove('active');
+  if (document.exitFullscreen) document.exitFullscreen().catch(()=>{});
+  else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+}
+
+function updateFullscreen() {
+  const title = document.getElementById('songTitle').value.trim();
+  const s = stanzas[currentIndex];
+  if (!s) return;
+
+  document.getElementById('fsSongTitle').textContent = title || '';
+  document.getElementById('fsSongTitle').style.display = title ? '' : 'none';
+  document.getElementById('fsStanzaLabel').textContent = s.label;
+
+  const lyricsEl = document.getElementById('fsLyrics');
+  lyricsEl.style.fontSize = fontSize + 'px';
+  lyricsEl.style.textAlign = textAlign;
+  lyricsEl.innerHTML = colorizeLines(s.text);
+  // Sync size label
+  const fsLabel = document.getElementById('fsFontSizeVal');
+  if (fsLabel) fsLabel.textContent = fontSize + 'px';
+
+  // Counter
+  document.getElementById('fsCounter').textContent = `${currentIndex + 1} / ${stanzas.length}`;
+  document.getElementById('fsPrevBtn').disabled = currentIndex === 0;
+  document.getElementById('fsNextBtn').disabled = currentIndex === stanzas.length - 1;
+
+  // Dots
+  const fsDots = document.getElementById('fsDots');
+  const maxDots = Math.min(stanzas.length, 12);
+  if (stanzas.length > 1) {
+    fsDots.innerHTML = stanzas.slice(0, maxDots).map((_, i) =>
+      `<div class="fs-dot ${i === currentIndex ? 'active' : ''}"></div>`
+    ).join('');
+  } else {
+    fsDots.innerHTML = '';
+  }
+}
+
+// ══════════════════════════════════════════════
+//  HELPERS
+// ══════════════════════════════════════════════
+function clearLyrics() {
+  document.getElementById('lyricsInput').value = '';
+}
+
+function clearAll() {
+  if (!confirm('Clear everything and start fresh?')) return;
+  document.getElementById('lyricsInput').value = '';
+  document.getElementById('songTitle').value = '';
+  stanzas = [];
+  currentIndex = 0;
+  renderStanzaList();
+  updatePreview();
+  updateNavControls();
+}
+
+// ══════════════════════════════════════════════
+//  KEYBOARD SHORTCUTS
+// ══════════════════════════════════════════════
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') { if (isFullscreen) closeFullscreen(); return; }
+  if (isFullscreen || document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'TEXTAREA') {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ') {
+      e.preventDefault(); navigate(1);
+    }
+    if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+      e.preventDefault(); navigate(-1);
+    }
+    if (e.key === 'f' || e.key === 'F') { if (!isFullscreen) openFullscreen(); }
+  }
+  if (e.key === 'Escape') closeFullscreen();
+});
+
+// Fullscreen change event
+document.addEventListener('fullscreenchange', () => {
+  if (!document.fullscreenElement && isFullscreen) closeFullscreen();
+});
+function escHtml(str) {
+  return str
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;');
+}
+
+let toastTimer;
+function showToast(msg) {
+  let t = document.getElementById('toastEl');
+  if (!t) {
+    t = document.createElement('div');
+    t.id = 'toastEl';
+    t.style.cssText = `
+      position:fixed;bottom:2rem;left:50%;transform:translateX(-50%) translateY(60px);
+      background:var(--black);color:white;padding:0.7rem 1.5rem;border-radius:8px;
+      font-family:'EB Garamond',serif;font-size:0.9rem;font-weight:500;
+      border-left:3px solid var(--green-light);
+      box-shadow:0 8px 24px rgba(0,0,0,0.25);z-index:9999;
+      transition:transform 0.35s cubic-bezier(.22,.61,.36,1);
+      white-space:nowrap;
+    `;
+    document.body.appendChild(t);
+  }
+  t.textContent = msg;
+  t.style.transform = 'translateX(-50%) translateY(0)';
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { t.style.transform = 'translateX(-50%) translateY(60px)'; }, 2800);
+}
+
+// ══════════════════════════════════════════════
+//  CLEAR
+// ══════════════════════════════════════════════
+</script>
+</body>
+</html>
